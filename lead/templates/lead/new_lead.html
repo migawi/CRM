@@ -1,0 +1,17 @@
+{% extends 'core/base.html' %}
+
+{% block title %} create_lead {% endblock %}
+
+{% block content %}
+<div class="py-5 px-5">
+    <h1 class="mb-2 text-xl">Create New Lead</h1>
+
+    <form method="post" action=".">
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button class="my-2 py-2 px-8 bg-gray-500 hover:bg-gray-600 rounded-xl">Create Lead</button>
+    </form>
+</div>
+{% endblock %}
