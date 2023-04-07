@@ -2,9 +2,9 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 
-from .forms import AddLeadForm
+from .forms import AddLeadForm, AddCommentForm
 from .models import Lead
-from crmclient.models import Client
+from crmclient.models import Client, Comment as ClientComment
 from team.models import Team
 
 # Create your views here.
@@ -44,11 +44,44 @@ def new_lead(request):
     return render(request, 'lead/new_lead.html', context)
 
 @login_required
+def new_comment(request, pk):
+    lead = get_object_or_404(Lead, created_by=request.user, pk=pk)
+
+    if request.method == 'POST':
+        form = AddCommentForm(request.POST)
+
+        if form.is_valid():
+            team = Team.objects.filter(created_by=request.user)[0]
+            comment = form.save(commit=False)
+            comment.team = team
+            comment.created_by = request.user
+            comment.lead_id = pk
+            comment.save()
+
+            messages.success(request, 'Comment created.')
+
+            return redirect ('leadsdetail', pk=pk)
+
+@login_required
 def leads_detail(request, pk):
     lead = get_object_or_404(Lead, created_by=request.user, pk=pk)
     #lead = Lead.objects.filter(created_by=request.user).get(pk=pk)
+    if request.method == 'POST':
+        form = AddCommentForm(request.POST, instance=lead)
 
-    context = {'lead': lead}
+        if form.is_valid():
+            lead.save()
+
+            messages.success(request, 'Lead has been edited.')
+
+            return redirect('leads')
+    else:
+        form = AddCommentForm(instance=lead)
+
+    context = {
+        'lead': lead,
+        'form': form
+    }
 
     return render(request, 'lead/leads_detail.html', context)
 
@@ -96,6 +129,18 @@ def convert_to_client(request, pk):
 
     lead.converted_to_client = True
     lead.save()
+    
+    # lead comments are converted to client comments
+    
+    comments = lead.comments.all()
+
+    for comment in comments:
+        ClientComment.objects.create(
+            client=client,
+            content=comment.content,
+            created_by=comment.created_by,
+            team=team
+        )
 
     messages.success(request, 'Lead has been converted to client.')
 

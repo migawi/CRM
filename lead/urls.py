@@ -8,5 +8,6 @@ urlpatterns = [
     path('<int:pk>/edit/', views.edit_lead, name='editleads'),
     path('<int:pk>/delete/', views.delete_lead, name='deleteleads'),
     path('<int:pk>/convert/', views.convert_to_client, name='convert_to_client'),
+    path('<int:pk>/new-comment/', views.new_comment, name='addcomment'),
     path('new-lead/', views.new_lead, name='newlead'),
 ]
