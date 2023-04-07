@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'crmclient',
     'dashboard',
     'lead',
+    'team',
     'userprofile',
 ]
 

@@ -4,6 +4,44 @@
 
 {% block content %}
 <div class="my-2 py-5 px-5">
-    <h1 class="my-2 text-xl">My Dashboard</h1>
+    <h1 class="my-2 font-bold rounded-xl bg-cyan-100 text-xl">My Dashboard</h1>
+
+    <p class="my-2">
+        <strong>Username: </strong>{{ request.user.username }}
+    </p>
+    <p class="my-2">
+        <strong>Team: </strong>{{ team.name }}
+
+        {% if team.created_by == request.user %}
+            <a href="{% url 'editteam' team.id %}" class="text-green-600">(Edit team)</a>
+        {% endif %}
+
+    </p>
+
+    <div class="flex space-x-5">
+        <div class="w-1/2 px-3 py-6 bg-slate-100 rounded-xl leads">
+            <h2 class="mb-1 font-semibold text-lg">New Leads</h2>
+
+            {% for lead in leads %}
+                <div class="my-2 lead">
+                    <h3>{{ lead.name }}</h3>
+                    <p class="text-xs">Status: {{ lead.get_status_display }}</p>
+                    <p class="text-xs">Priority: {{ lead.get_priority_display }}</p>
+                    <a href="{% url 'leadsdetail' lead.pk %}" class="text-blue-500">more</a>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="w-1/2 px-3 py-6 bg-slate-100 rounded-xl clients">
+            <h2 class="mb-1 font-semibold text-lg">New clients</h2>
+
+            {% for client in clients %}
+                <div class="my-2 client">
+                    <h3>{{ client.name }}</h3>
+                    <a href="{% url 'client_detail' client.pk %}" class="text-blue-500">more</a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
 </div>
 {% endblock %}

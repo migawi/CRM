@@ -5,6 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .forms import AddLeadForm
 from .models import Lead
 from crmclient.models import Client
+from team.models import Team
 
 # Create your views here.
 
@@ -18,12 +19,15 @@ def leads_catalog(request):
 
 @login_required
 def new_lead(request):
+    team = Team.objects.filter(created_by=request.user)[0]
     if request.method == 'POST':
         form = AddLeadForm(request.POST)
 
         if form.is_valid():
+            team = Team.objects.filter(created_by=request.user)[0]
             lead = form.save(commit=False)
             lead.created_by = request.user
+            lead.team = team
             lead.save()
 
             messages.success(request, 'Lead has been created.')
@@ -32,7 +36,10 @@ def new_lead(request):
     else:
         form = AddLeadForm()
 
-    context = {'form': form}
+    context = {
+        'form': form,
+        'team': team
+    }
 
     return render(request, 'lead/new_lead.html', context)
 
@@ -77,12 +84,14 @@ def delete_lead(request, pk):
 @login_required
 def convert_to_client(request, pk):
     lead = get_object_or_404(Lead, created_by=request.user, pk=pk)
+    team = Team.objects.filter(created_by=request.user)[0]
 
     client = Client.objects.create(
         name=lead.name,
         email=lead.email,
         definition=lead.definition,
         created_by=request.user,
+        team=team,
     )
 
     lead.converted_to_client = True

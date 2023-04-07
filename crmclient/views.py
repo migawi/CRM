@@ -4,6 +4,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 
 from .models import Client
 from .forms import AddClientForm
+from team.models import Team
 
 # Create your views here.
 
@@ -25,12 +26,15 @@ def client_detail(request, pk):
 
 @login_required
 def new_client(request):
+    team = Team.objects.filter(created_by=request.user)[0]
     if request.method == 'POST':
         form = AddClientForm(request.POST)
 
         if form.is_valid():
+            team = Team.objects.filter(created_by=request.user)[0]
             client = form.save(commit=False)
             client.created_by = request.user
+            client.team = team
             client.save()
 
             messages.success(request, 'Client created successfully.')
@@ -40,7 +44,8 @@ def new_client(request):
         form = AddClientForm()
 
     return render(request, 'crmclient/new_client.html', {
-        'form': form
+        'form': form,
+        'team': team
     })
 
 @login_required
