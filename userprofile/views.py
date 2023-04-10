@@ -1,13 +1,14 @@
-from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
 
 from team.models import Team
+
+from .forms import SignupForm
 
 # Create your views here.
 
 def signup(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = SignupForm(request.POST)
 
         if form.is_valid():
             user = form.save()
@@ -20,7 +21,7 @@ def signup(request):
             return redirect('login')
 
     else:
-        form = UserCreationForm()
+        form = SignupForm()
 
     context = {
         'form': form

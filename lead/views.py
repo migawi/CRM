@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 
-from .forms import AddLeadForm, AddCommentForm
+from .forms import AddLeadForm, AddCommentForm, AddFileForm
 from .models import Lead
 from crmclient.models import Client, Comment as ClientComment
 from team.models import Team
@@ -63,24 +63,45 @@ def new_comment(request, pk):
             return redirect ('leadsdetail', pk=pk)
 
 @login_required
+def add_file(request, pk):
+    lead = get_object_or_404(Lead, created_by=request.user, pk=pk)
+
+    if request.method == 'POST':
+        form = AddFileForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            team = Team.objects.filter(created_by=request.user)[0]
+            file = form.save(commit=False)
+            file.team = team
+            file.created_by = request.user
+            file.lead_id = pk
+            file.save()
+
+        return redirect('leadsdetail', pk=pk)
+
+
+@login_required
 def leads_detail(request, pk):
     lead = get_object_or_404(Lead, created_by=request.user, pk=pk)
     #lead = Lead.objects.filter(created_by=request.user).get(pk=pk)
     if request.method == 'POST':
-        form = AddCommentForm(request.POST, instance=lead)
+        form1 = AddCommentForm(request.POST, instance=lead)
+        form2 = AddFileForm(request.POST, instance=lead)
 
-        if form.is_valid():
+        if form1.is_valid() and form2.is_valid():
             lead.save()
 
             messages.success(request, 'Lead has been edited.')
 
             return redirect('leads')
     else:
-        form = AddCommentForm(instance=lead)
+        form1 = AddCommentForm(instance=lead)
+        form2 = AddFileForm(instance=lead)
 
     context = {
         'lead': lead,
-        'form': form
+        'form1': form1,
+        'form2': form2
     }
 
     return render(request, 'lead/leads_detail.html', context)

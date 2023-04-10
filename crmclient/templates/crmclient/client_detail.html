@@ -45,6 +45,29 @@
 
             <button class="my-2 py-2 px-4 rounded-xl bg-gray-500 text-white">Submit</button>
         </form>
+
+        <hr class="my-3">
+        <h2 class="text-2xl">Files</h2>
+
+        <div class="mb-2 space-y-4">
+            {% for file in client.files.all %}
+                <div class="bg-slate-200 rounded-xl px-4 -py-4">
+                    <p class="my-2">
+                        <strong>{{ file.created_by }}</strong> @ {{file.created_at}}
+                    </p>
+                    <a href="{{ file.file.url }}">Download</a>
+                </div>
+            {% endfor %}
+        </div>
+
+
+        <form method="post" action="{% url 'addclientfile' client.id %}" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            {{ form2.as_p }}
+
+            <button class="my-2 py-2 px-4 rounded-xl bg-gray-500 text-white">Submit</button>
+        </form>
             
         <hr class="my-3">
 
